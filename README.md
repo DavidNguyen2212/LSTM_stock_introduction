@@ -4,3 +4,5 @@ lượng của một vài mã cổ phiếu) để xây dựng một số mô hì
 động giá cổ phiếu.
 
 Biến động giá cổ phiếu Δ = Giá cổ phiếu N (phút hoặc giờ hoặc ngày) sau - Giá cổ phiếu hiện tại.
+
+# Sử dụng GRU từ tf.keras. 
