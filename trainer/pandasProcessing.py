@@ -17,21 +17,21 @@ def convert_df(csv_path: str, attribute_to_convert: str) -> Tuple[DataFrame, Dat
     - a scaler of the adjusted columns
     """
     df: DataFrame = pd.read_csv(csv_path)
+    daily_df: DataFrame = None
+    scaler = MinMaxScaler()
     # Convert the datetime column to real datetime type
     df['Date/Time'] = pd.to_datetime(df.iloc[:, 1])
     # Extract date
-    df['Date'] = df['Date/Time'].dt.date
-    # Group Date collumn
-    daily_df = df.groupby("Date")[df.columns].apply(
-        lambda x: x.iloc[-1],
-        include_groups = True
-    ).reset_index(drop=True)
+    if attribute_to_convert == "d":
+        df['Date'] = df['Date/Time'].dt.date
+        # Group Date collumn
+        daily_df = df.groupby("Date")[df.columns].apply(
+            lambda x: x.iloc[-1],
+            include_groups = True
+        ).reset_index(drop=True)
 
-    scaler = MinMaxScaler()
-    daily_df['Close_Transform'] = scaler.fit_transform(daily_df.iloc[:, 5:6].astype('float32'))
-
-    daily_df = daily_df.drop(columns=['Open Interest', 'Date/Time'])
-    daily_df.head()
+        daily_df['Close_Transform'] = scaler.fit_transform(daily_df.iloc[:, 5:6].astype('float32'))
+        daily_df = daily_df.drop(columns=['Open Interest', 'Date/Time'])
 
     return df, daily_df, scaler
 
