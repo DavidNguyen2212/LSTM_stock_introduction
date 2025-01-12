@@ -1,4 +1,5 @@
 from datetime import timedelta
+import os
 from matplotlib import pyplot as plt
 import numpy as np
 import pandas as pd
@@ -6,9 +7,9 @@ from pandas import DataFrame
 from sklearn.preprocessing import MinMaxScaler
 import tensorflow as tf
 from tqdm import tqdm
-from trainer.StockModel import StockModel
-from trainer.pandasProcessing import convert_df
-from trainer.utils import anchor, calculate_accuracy
+from StockModel import StockModel
+from pandasProcessing import convert_df, extract_features
+from utils import anchor, calculate_accuracy
 
 test_size = 30
 num_layers = 1
@@ -30,7 +31,7 @@ def forecast(daily_df: DataFrame, df_train: DataFrame, scaler: MinMaxScaler):
 
     # training
     for epoch_idx in tqdm(range(epoch), desc="Training"):
-        init_value = [tf.zeros(1, size_layer) for _ in range(num_layers)]
+        init_value = [tf.zeros((1, size_layer)) for _ in range(num_layers)]
         total_loss, total_acc = [], []
 
         for k in range(0, df_train.shape[0] - 1, timestamp):
@@ -42,7 +43,7 @@ def forecast(daily_df: DataFrame, df_train: DataFrame, scaler: MinMaxScaler):
                 loss = model.compute_loss(logits, tf.expand_dims(batch_y, axis=0))
 
             gradients = tape.gradient(loss, model.trainable_variables)
-            model.optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+            model.optim.apply_gradients(zip(gradients, model.trainable_variables))
 
             # Update hidden states
             init_value = last_state
@@ -51,6 +52,7 @@ def forecast(daily_df: DataFrame, df_train: DataFrame, scaler: MinMaxScaler):
         tqdm.write(f"Epoch {epoch_idx + 1}, Loss: {np.mean(total_loss)}, Accuracy: {np.mean(total_acc)}")
 
     # Dự báo tương lai
+    future_day = 30
     output_predict = np.zeros((df_train.shape[0] + future_day, df_train.shape[1]))
     output_predict[0] = df_train.iloc[0].values
     upper_b = (df_train.shape[0] // timestamp) * timestamp
@@ -88,14 +90,16 @@ def forecast(daily_df: DataFrame, df_train: DataFrame, scaler: MinMaxScaler):
 
 
 def main():
-    df, close_scaler = convert_df('../data/PNJ.csv') 
-    df_train = df.iloc[:-test_size]
-    df_test = df.iloc[-test_size:]
+    df, close_scaler = convert_df('data/PNJ.csv')
+    close_df = extract_features(df) 
+    df_train = close_df.iloc[:-test_size]
+    df_train.head()
+    # df_test = close_df.iloc[-test_size:]
     results = []
     for i in range(2):
         print('simulation %d'%(i + 1))
         results.append(forecast(df, df_train, close_scaler))
-    accuracies = [calculate_accuracy(df_test.values, r) for r in results]
+    accuracies = [calculate_accuracy(close_df.values, r) for r in results]
 
     plt.figure(figsize = (15, 5))
     for no, r in enumerate(results):

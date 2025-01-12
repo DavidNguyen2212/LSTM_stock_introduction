@@ -19,15 +19,15 @@ def convert_df(csv_path: str) -> Tuple[DataFrame, MinMaxScaler]:
     ).reset_index(drop=True)
 
     scaler = MinMaxScaler()
-    df['Close'] = scaler.fit_transform(df.iloc[:, 5:6].astype('float32'))
+    df['Close_Transform'] = scaler.fit_transform(df.iloc[:, 5:6].astype('float32'))
 
     df = df.drop(columns=['Open Interest', 'Date/Time'])
     df.head()
 
     return df, scaler
 
-def extract_features(df: DataFrame, columns: List[str] = ["Close"]):
-    if columns == ["Close"]:
+def extract_features(df: DataFrame, columns: List[str] = ["Close_Transform"]):
+    if columns == ["Close_Transform"]:
         return df[columns]
 
 
