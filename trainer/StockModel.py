@@ -6,6 +6,18 @@ from keras.src.optimizers import AdamW
 class StockModel(Model):
     """
     Class StockModel inherits the base model Keras.models.Model
+
+    @params to __init__:
+    - learning_rate: learning rate of the model
+    - num_layers: the number of GRU layers
+    - size_layers: the number of unit to pass to keras.layers.GRU
+    - output_size: the number of unit in the output
+    - forget_bias: serving dropout in recurrence 
+
+    You need to re-implement the following methods:
+    @call
+    @compute_loss
+    @train_step
     """
     def __init__(self, learning_rate, num_layers, size_layer, output_size, forget_bias = 0.1):
         super(StockModel, self).__init__()
